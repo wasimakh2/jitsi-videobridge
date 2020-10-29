@@ -158,13 +158,21 @@ public class BitrateController
         {
             AbstractEndpoint endpoint = conferenceEndpoints.get(i);
 
-            VideoConstraints effectiveVideoConstraints = (i < adjustedLastN || adjustedLastN < 0)
-                    ? videoConstraintsMap.getOrDefault(endpoint.getID(), VideoConstraints.thumbnailVideoConstraints)
-                    : VideoConstraints.disabledVideoConstraints;
-
-            endpointMultiRankList.add(new EndpointMultiRank(i, effectiveVideoConstraints, endpoint));
+            endpointMultiRankList.add(new EndpointMultiRank(i,
+                videoConstraintsMap.getOrDefault(endpoint.getID(),
+                    VideoConstraints.thumbnailVideoConstraints), endpoint));
         }
+
         endpointMultiRankList.sort(new EndpointMultiRanker());
+
+        if (adjustedLastN > -1)
+        {
+            for (int i = adjustedLastN; i < endpointMultiRankList.size(); i++)
+            {
+                endpointMultiRankList.get(i).effectiveVideoConstraints = VideoConstraints.disabledVideoConstraints;
+            }
+        }
+
         return endpointMultiRankList;
     }
 
@@ -1395,7 +1403,7 @@ public class BitrateController
         /**
          * The video constraints of the {@link #endpoint}.
          */
-        final VideoConstraints effectiveVideoConstraints;
+        VideoConstraints effectiveVideoConstraints;
 
         /**
          * The endpoint (sender) that's constrained and is ranked for bandwidth
